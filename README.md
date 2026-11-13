@@ -3,6 +3,7 @@
 An open-source Ad Blocker for Facebook™
 
 - Support the FB5 layout (Thanks to [Christos Botsikas](https://github.com/cbotsikas))
+- FORK [tiratatp](https://github.com/facebook-adblock/facebook_adblock))
 - Blocks both suggested posts and sidebar ads
 - Does not slow down your computer
 - Does not track/read your Facebook activity, or other websites
