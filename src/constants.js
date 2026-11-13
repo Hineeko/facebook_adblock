@@ -1,53 +1,35 @@
-// if e contains anything in allowedList, then ignore.
 const allowedList = [];
 
-// if e contains anything in blockedList, then hide.
-// a[data-hovercard][href*="hc_ref=ADS"] from https://github.com/uBlockOrigin/uAssets/issues/233
-// a[role="button"][target="_blank"] is used for good post now too.
 const staticBlockedList = [
   "._m8c",
   ".uiStreamSponsoredLink",
   'a[data-hovercard][href*="hc_ref=ADS"]',
   'a[role="button"][rel~="noopener"][data-lynx-mode="async"]',
+  'a[href*="/ads/about"]',
+  'a[href*="?__cft__"][href*="&__tn__="] span[aria-labelledby]',
 ];
 
 const sponsoredTexts = [
   "Sponsored",
-  "مُموَّل", // Arabic
-  "赞助内容", // Chinese (Simplified)
-  "贊助", // Chinese (Traditional)
-  "Sponzorováno", // Czech
-  "Gesponsord", // Dutch
-  "May Sponsor", // Filipino
-  "Commandité", // French (Canada)
-  "Sponsorisé", // French
-  "Gesponsert", // German
-  "Χορηγούμενη", // Greek
-  "ממומן", // Hebrew
-  "प्रायोजित", // Hindi
-  "Hirdetés", // Hungarian
-  "Bersponsor", // Indonesian
-  "Sponsorizzato", // Italian
-  "広告", // Japanese
-  "Sponsorowane", // Polish
-  "Patrocinado", // Portuguese (Brazil)
-  "Sponsorizat", // Romanian
-  "Реклама", // Russian
-  "Sponzorované", // Slovak
-  "Publicidad", // Spanish
-  "Sponsrad", // Swedish
-  "ได้รับการสนับสนุน", // Thai
-  "Sponsorlu", // Turkish
-  "Được tài trợ", // Vietnamese
+  "ได้รับการสนับสนุน",
+  "Suggested for you",
+  "แนะนำสำหรับคุณ",
+  "Reels and short videos",
+  "Reels และวิดีโอสั้น",
+  "People You May Know",
+  "คนที่คุณอาจรู้จัก",
+  "Groups you might like",
+  "กลุ่มที่คุณอาจถูกใจ",
+  "Follow",
+  "ติดตาม",
+  "Join",
+  "เข้าร่วม",
 ];
 
 function getBlockedList() {
-  // Aria labels may be localised so use the same translations as sponsoredTexts
-  const ariaLabels = sponsoredTexts.map((t) => `a[aria-label="${t}"]`);
-
+  const ariaLabels = sponsoredTexts.map((t) => `[aria-label="${t}"]`);
   return [...staticBlockedList, ...ariaLabels];
 }
 
 export { allowedList, sponsoredTexts };
-
 export const blockedList = getBlockedList();
