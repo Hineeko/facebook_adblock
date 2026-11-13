@@ -1,95 +1,60 @@
-# facebook_adblock
+# facebook adblock
 
-An open-source Ad Blocker for Facebook™
+An enhanced, open-source Ad Blocker & Feed Cleaner for Facebook™ (Thai & English UI supported).
 
-- Support the FB5 layout (Thanks to [Christos Botsikas](https://github.com/cbotsikas))
-- FORK [tiratatp](https://github.com/facebook-adblock/facebook_adblock))
-- Blocks both suggested posts and sidebar ads
-- Does not slow down your computer
-- Does not track/read your Facebook activity, or other websites
-- You can inspect everything about this extension here, https://github.com/facebook-adblock/facebook_adblock/blob/mainline/src/main.js
+- Forked & upgraded from [facebook-adblock/facebook_adblock](https://github.com/facebook-adblock/facebook_adblock) (Original work by [tiratatp](https://github.com/tiratatp) & [Christos Botsikas](https://github.com/cbotsikas))
+- **Real-time Blocked Counter:** Tracks blocked Reels, Suggested posts, and Sponsored ads with a quick reset option
+- **Highlight Mode (ส่องแอด ไม่ซ่อน):** Highlights ads and unwanted posts instead of hiding them for easy inspection
+- **Clean Mode (บล็อกทุกอย่าง):** One-click toggle to block all clutter across your feed
+- **Granular Content Controls:**
+  - Remove Reels
+  - Remove Sponsored posts
+  - Remove Suggested / Follow posts
+  - Remove Marketplace & Right-hand side Ads
+  - Remove Search Ads
+  - Remove Stories
+  - Remove "Groups you might like"
+  - Remove "People You May Know" (PPYMK / คนอาจรู้จัก)
+- **Page Whitelist:** Easily exempt specific pages from being blocked (comma-separated, e.g., `โหนกระแส, PageName`)
+- **Privacy First:** Lightweight, does not slow down your browser, and does not track or read your Facebook activity
 
-This extension is 100% free and open source.
+## Screenshot
 
-## Installation
+<img width="372" height="584" alt="image" src="https://github.com/user-attachments/assets/1c802f88-936a-4b16-b31e-dba50e5ec4a8" />
+<img width="870" height="290" alt="image" src="https://github.com/user-attachments/assets/95dd63e6-465f-4edb-94a3-ebe2ada8fac9" />
+<img width="887" height="556" alt="image" src="https://github.com/user-attachments/assets/9a304374-4484-43da-87c9-503475d9b3d0" />
+<img width="898" height="533" alt="image" src="https://github.com/user-attachments/assets/c119b4b8-11b9-4b7b-9b89-b34d08ee71b4" />
 
-### Chrome
 
-https://chrome.google.com/webstore/detail/ad-blocker-for-facebook/kinpgphmiekapnpbmobneleaiemkefag
+## Installation (Manual / Developer Mode)
 
-[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/kinpgphmiekapnpbmobneleaiemkefag.svg)](https://chrome.google.com/webstore/detail/ad-blocker-for-facebook/kinpgphmiekapnpbmobneleaiemkefag)
-[![Chrome Web Store](https://img.shields.io/chrome-web-store/users/kinpgphmiekapnpbmobneleaiemkefag.svg)](https://chrome.google.com/webstore/detail/ad-blocker-for-facebook/kinpgphmiekapnpbmobneleaiemkefag)
-[![Chrome Web Store](https://img.shields.io/chrome-web-store/stars/kinpgphmiekapnpbmobneleaiemkefag.svg)](https://chrome.google.com/webstore/detail/ad-blocker-for-facebook/kinpgphmiekapnpbmobneleaiemkefag)
+Since this version is self-hosted and not distributed on the Chrome Web Store, you can install it manually in any Chromium-based browser (Chrome, Edge, Brave, etc.):
 
-### Firefox
+1. Download the latest release ZIP from this repository or clone it via Git (`git clone https://github.com/<YOUR_GITHUB_USERNAME>/facebook_adblock.git`). If you are building from source, run `npm install` and `npm run release` to generate the `dist/` folder.
+2. Open your browser and navigate to `chrome://extensions/` (or `edge://extensions/`).
+3. Enable **Developer mode** (โหมดนักพัฒนาซอฟต์แวร์) in the top-right corner.
+4. Click **Load unpacked** (โหลดส่วนขยายที่แตกไฟล์แล้ว) and select the extracted extension folder (or the `dist/` folder).
+5. Pin the extension to your toolbar and configure your blocking preferences.
 
-https://addons.mozilla.org/en-US/firefox/addon/fb_ad_block/ (Thanks to [Chih-Hsuan Yen](https://github.com/yan12125))
+## Building from Source
 
-[![Mozilla Add-on](https://img.shields.io/amo/v/fb_ad_block.svg)](https://addons.mozilla.org/en-US/firefox/addon/fb_ad_block/)
-[![Mozilla Add-on](https://img.shields.io/amo/users/fb_ad_block.svg)](https://addons.mozilla.org/en-US/firefox/addon/fb_ad_block/)
-[![Mozilla Add-on](https://img.shields.io/amo/stars/fb_ad_block.svg)](https://addons.mozilla.org/en-US/firefox/addon/fb_ad_block/)
+1. Install dependencies:
+   ```bash
+   npm install
+Build the extension:
 
-Enjoy!
+Bash
+npm run release
+The compiled extension will be generated in the dist/ directory.
 
-_We are not affiliated, associated, authorized, endorsed by, or in any way officially connected with Facebook._
+Debugging
+You can toggle Highlight mode directly from the extension popup to visually inspect detected elements on the page without hiding them.
 
-_Facebook is a registered trademark of the Facebook, Inc._
+Additionally, processed DOM elements are flagged with data-blocked attributes (allowedList, blockedList, sponsored), which can be inspected via Browser DevTools Console using selectors like *[data-blocked] or *[data-blocked=sponsored].
 
-## Building
+Support
+If you find this updated extension useful, feel free to support the development via the Buy me a coffee button inside the extension popup!
 
-1. Run `npm run release`
-1. The compiled extension should be in `dist/`
-1. Load the unsigned extension into your browser
+We are not affiliated, associated, authorized, endorsed by, or in any way officially connected with Facebook.
 
-## Debugging
-
-All processed DOM elements are flagged with `data-blocked` attribute. Possible values are:
-
-- `allowedList`: allowed list
-- `blockedList`: blocked due to blocked list check
-- `sponsored`: blocked due to sponsored label
-
-You can use dev tools console with CSS selectors like `*[data-blocked]` or `*[data-blocked=sponsored]`.
-
-For example add inline style properties to all existing hidden sponsored posts:
-
-```
-document.querySelectorAll("*[data-blocked=sponsored]").forEach((x) => {
-  x.style.display="inherit";
-  x.style.border="red 10px solid";
-});
-```
-
-You can also inject css which applies to both existing and new processed elements:
-
-```
-document.head.insertAdjacentHTML("beforeend",
-`<style>
-  *[data-blocked] {
-    display:inherit !important;
-    border: red 10px solid;
-  }
-  *[data-blocked=allowedList] {
-    border-color: green;
-  }
-  *[data-adblocked] {
-    display:inherit !important;
-    border: pink 10px solid;
-  }
-  *[data-adblock-monitored] {
-    border: blue 10px solid;
-  }
-  *[data-adblock-observed] {
-    border: aqua 10px solid;
-  }
-</style>`);
-```
-
-## Publishing
-
-1. Tag a commit with a string with this format `v*.*.*`
-   - `git tag -a v2.0.0`
-1. Push a tag to Github
-1. Github action should publish the extension to both Firefox and Chrome
-   - Firefox should be released in a couple of minutes
-   - Chrome can take as long as a few months if it needs a review
+Facebook is a registered trademark of Meta Platforms, Inc.
