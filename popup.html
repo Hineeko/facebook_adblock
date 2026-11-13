@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 340px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 14px 16px;
+      color: #222;
+      background: #fff;
+      user-select: none;
+    }
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    h2 {
+      margin: 0;
+      font-weight: 600;
+      font-size: 17px;
+    }
+    .reset-btn {
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #666;
+      padding: 2px 6px;
+      cursor: pointer;
+    }
+    .reset-btn:hover {
+      background: #f5f5f5;
+      color: #d00;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 2px;
+    }
+    .stat-val {
+      font-size: 21px;
+      font-weight: 700;
+      color: #111;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 13.5px;
+    }
+    .row.highlight-row {
+      background: #fff8e6;
+      margin: 0 -8px 6px -8px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+    .label-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 42px;
+      height: 20px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .2s;
+      border-radius: 20px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .2s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #1877f2;
+    }
+    input[data-key="highlightMode"]:checked + .slider {
+      background-color: #f59e0b;
+    }
+    input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+    .whitelist-box {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+    }
+    .whitelist-box label {
+      display: block;
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .whitelist-box input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px 8px;
+      font-size: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      outline: none;
+    }
+    .whitelist-box input:focus {
+      border-color: #1877f2;
+    }
+    .bmc-container {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+      text-align: center;
+    }
+    .bmc-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background-color: #FFDD00;
+      color: #000000;
+      font-weight: 600;
+      font-size: 13.5px;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      transition: background-color 0.2s, transform 0.1s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+    .bmc-btn:hover {
+      background-color: #ffea5c;
+    }
+    .bmc-btn:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <h2>Blocked</h2>
+    <button class="reset-btn" id="reset-stats" title="ล้างตัวเลขสถิติ">Reset</button>
+  </div>
+
+  <div class="stats">
+    <div>
+      <div class="stat-label">Reels</div>
+      <div class="stat-val" id="stat-reels">0</div>
+    </div>
+    <div>
+      <div class="stat-label">Suggested</div>
+      <div class="stat-val" id="stat-suggested">0</div>
+    </div>
+    <div>
+      <div class="stat-label">Sponsored</div>
+      <div class="stat-val" id="stat-sponsored">0</div>
+    </div>
+  </div>
+
+  <div id="toggles">
+    <div class="row highlight-row">
+      <div class="label-wrap"><span>🕵️</span> Highlight mode (ส่องแอด ไม่ซ่อน)</div>
+      <label class="switch"><input type="checkbox" data-key="highlightMode"><span class="slider"></span></label>
+    </div>
+    <div class="row"><div class="label-wrap"><span>👍🏼</span> Clean mode (บล็อกทุกอย่าง)</div><label class="switch"><input type="checkbox" data-key="cleanMode"><span class="slider"></span></label></div>
+    <div class="row"><div class="label-wrap"><span>🙈</span> Remove reels</div><label class="switch"><input type="checkbox" data-key="removeReels"><span class="slider"></span></label></div>
+    <div class="row"><div class="label-wrap"><span>🏬</span> Remove sponsored</div><label class="switch"><input type="checkbox" data-key="removeSponsored"><span class="slider"></span></label></div>
+    <div class="row"><div class="label-wrap"><span>🧏‍♀️</span> Remove suggested / Follow</div><label class="switch"><input type="checkbox" data-key="removeSuggested"><span class="slider"></span></label></div>
+    <div class="row"><div class="label-wrap"><span>🚫</span> Remove market & right Ads</div><label class="switch"><input type="checkbox" data-key="removeMarketAds"><span class="slider"></span></label></div>
+    <div class="row"><div class="label-wrap"><span>🔎</span> Remove searching Ads</div><label class="switch"><input type="checkbox" data-key="removeSearchAds"><span class="slider"></span></label></div>
+    <div class="row"><div class="label-wrap"><span>😵</span> Remove stories</div><label class="switch"><input type="checkbox" data-key="removeStories"><span class="slider"></span></label></div>
+    <div class="row"><div class="label-wrap"><span>😷</span> Remove group you might like</div><label class="switch"><input type="checkbox" data-key="removeGroups"><span class="slider"></span></label></div>
+    <div class="row"><div class="label-wrap"><span>🔞</span> Remove PPYMK (คนอาจรู้จัก)</div><label class="switch"><input type="checkbox" data-key="removePPYMK"><span class="slider"></span></label></div>
+  </div>
+
+  <div class="whitelist-box">
+    <label for="whitelist-input">🛡️ Whitelist ชื่อเพจ (คั่นด้วยลูกน้ำ ,)</label>
+    <input type="text" id="whitelist-input" placeholder="เช่น โหนกระแส, ชื่อเพจที่ต้องการยกเว้น">
+  </div>
+
+  <div class="bmc-container">
+    <a href="https://buymeacoffee.com/hineeko" target="_blank" rel="noopener noreferrer" class="bmc-btn">
+      <span>☕</span> Buy me a coffee
+    </a>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
