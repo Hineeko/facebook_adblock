@@ -1,11 +1,7 @@
 import { allowedList, sponsoredTexts, blockedList } from "./constants";
 
-/**
- * Facebook uses various techniques to hide an element
- * @param {Element} e
- * @returns {boolean} true if this element is hidden; Thus a text inside this element is not visible to the users.
- */
 function isHidden(e) {
+  if (e.getAttribute("aria-hidden") === "true") return true;
   const style = window.getComputedStyle(e);
   return !!(
     e.offsetParent === null ||
@@ -13,55 +9,44 @@ function isHidden(e) {
     style.opacity === "0" ||
     style.fontSize === "0px" ||
     style.visibility === "hidden" ||
-    style.position === "absolute"
+    style.position === "absolute" ||
+    style.clip === "rect(0px, 0px, 0px, 0px)" ||
+    style.clipPath === "inset(50%)" ||
+    parseInt(style.width, 10) === 0 ||
+    parseInt(style.height, 10) === 0
   );
 }
 
-/**
- * Facebook uses various techniques to hide a text inside an element
- * @param {Element} e
- * @returns {string} a text hidden inside this DOM element; Returns an empty string if there is no hidden text.
- */
 function getTextFromElement(e) {
+  // รองรับกรณี Facebook ซ่อนคำไว้ใน SVG <use xlink:href="#...">
+  if (e.tagName.toLowerCase() === "use") {
+    const href = e.getAttribute("xlink:href") || e.getAttribute("href");
+    if (href) {
+      const target = document.querySelector(href);
+      if (target) return target.textContent || "";
+    }
+  }
   return (e.innerText === "" ? e.dataset.content : e.innerText) || "";
 }
 
-/**
- * For FB5, Facebook also hides a text directly inside a container element.
- * @param {Element} e
- * @returns {string} a text hidden inside this DOM element
- */
 function getTextFromContainerElement(e) {
-  // we only need the data-content of a container element, or any direct text inside it
   return (
     e.dataset.content ||
     Array.prototype.filter
-      .call(e.childNodes, (element) => {
-        return element.nodeType === Node.TEXT_NODE;
-      })
-      .map((element) => {
-        return element.textContent;
-      })
+      .call(e.childNodes, (element) => element.nodeType === Node.TEXT_NODE)
+      .map((element) => element.textContent)
       .join("")
   );
 }
 
-/**
- * Return a text inside this given DOM element that is visible to the users
- * @param {Element} e
- * @returns {string}
- */
 function getVisibleText(e) {
   if (isHidden(e)) {
-    // stop if this is hidden
     return "";
   }
   const children = e.querySelectorAll(":scope > *");
   if (children.length !== 0) {
     const elementComputedStyle = window.getComputedStyle(e);
     if (elementComputedStyle.display === "flex") {
-      // if the container is a flex container,
-      // then we need a special logic to sort children based on their CSS `order`
       return (
         getTextFromContainerElement(e) +
         Array.prototype.slice
@@ -71,44 +56,37 @@ function getVisibleText(e) {
             return style.order !== "";
           })
           .map((el) => [parseInt(el.style.order, 10), getVisibleText(el)])
-          .sort((a, b) => a[0] - b[0]) // sort on `order`
-          .map((el) => el[1]) // get the just the text
+          .sort((a, b) => a[0] - b[0])
+          .map((el) => el[1])
           .flat()
           .join("")
       );
     }
-    // more level => recursive
     return (
       getTextFromContainerElement(e) +
       Array.prototype.slice.call(children).map(getVisibleText).flat().join("")
     );
   }
-  // we have found the real text
   return getTextFromElement(e);
 }
 
-/**
- * Hide an element if this is a sponsored element
- * @param {String[]} possibleSponsoredTextQueries a list of selectors to look for a sponsored element
- * @param {Element} e DOM element
- * @returns {boolean} true if this is a sponsored element
- */
 function hideIfSponsored(possibleSponsoredTextQueries, e) {
-  // ignore if matches the allowedList
+  if (!e || e.nodeType !== Node.ELEMENT_NODE || e.dataset.blocked) {
+    return false;
+  }
+
   if (
     allowedList.some((query) => {
       if (e.querySelector(query) !== null) {
         e.dataset.blocked = "allowedList";
-        console.info("ABfF:", `Ignored (${query})`, [e]);
         return true;
       }
       return false;
     })
   ) {
-    return false; // ignored this element
+    return false;
   }
 
-  // hide right away if matches the blocked list
   if (
     blockedList.some((query) => {
       if (e.querySelector(query) !== null) {
@@ -120,29 +98,15 @@ function hideIfSponsored(possibleSponsoredTextQueries, e) {
       return false;
     })
   ) {
-    return true; // has ad
+    return true;
   }
 
-  // log the second post to make it easier to debug and allow users to report issues.
-  if (e.dataset.pagelet === "FeedUnit_1") {
-    let preview = getVisibleText(e);
-    const index = preview.indexOf("·");
-    preview = `${preview.substring(0, index > 0 ? index : 50).trim()}…`;
-    console.info("ABfF:", `This is the second post and usually is an ad`, [
-      preview,
-      e,
-    ]);
-  }
-
-  // Look through a list of possible locations of "Sponsored" tag, and see if it matches our list of `sponsoredTexts`
   return possibleSponsoredTextQueries.some((query) => {
     const result = e.querySelectorAll(query);
-    // Determine if should use the parent node, checking if it contains `order` word
     const shouldUseTextFromParent = query.indexOf("order") > -1;
     return [...result].some((t) => {
-      //  Should I use the text from parent node?
       const item = shouldUseTextFromParent ? t.parentElement : t;
-      const visibleText = getVisibleText(item);
+      const visibleText = getVisibleText(item).trim();
       if (
         sponsoredTexts.some(
           (sponsoredText) => visibleText.indexOf(sponsoredText) !== -1
@@ -152,7 +116,7 @@ function hideIfSponsored(possibleSponsoredTextQueries, e) {
         e.dataset.blocked = "sponsored";
         console.info(
           "ABfF:",
-          `AD Blocked (query='${query}', visibleText='${visibleText}')`,
+          `Blocked (query='${query}', visibleText='${visibleText}')`,
           [e]
         );
         return true;
