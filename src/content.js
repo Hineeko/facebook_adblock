@@ -1,5 +1,5 @@
 (function () {
-  console.info("ABfF Pro: Initialized v3.1 God-Tier Engine");
+  console.info("ABfF Pro: Initialized v3.2 God-Tier Engine");
 
   const defaultConfig = {
     highlightMode: false,
@@ -235,11 +235,29 @@
     return null;
   }
 
+  function isSponsoredLabelText(str) {
+    const t = cleanText(str).toLowerCase();
+    return t === "sponsored" || t === "ได้รับการสนับสนุน";
+  }
+
   function isSponsoredElement(rootEl) {
     const adSelector = rootEl.querySelector(
       'a[href*="/ads/about"], a[href*="hc_ref=ADS"], a[href*="utm_medium=paid"], a[href*="utm_medium=cpc"], a[href*="fbclid="][target="_blank"], [aria-label*="sponsored content" i], [aria-label*="เนื้อหาที่ได้รับการสนับสนุน"], a[aria-label="Sponsored" i], a[aria-label="ได้รับการสนับสนุน"]'
     );
     if (adSelector) return true;
+
+    // เช็ก aria-labelledby (ดักแอดแบบ SVG <use> รุ่นใหม่)
+    const labelledEls = rootEl.querySelectorAll("[aria-labelledby]");
+    for (const el of labelledEls) {
+      const ids = (el.getAttribute("aria-labelledby") || "").split(/\s+/);
+      for (const id of ids) {
+        if (!id) continue;
+        const target = document.getElementById(id);
+        if (target && isSponsoredLabelText(target.textContent)) {
+          return true;
+        }
+      }
+    }
 
     const elements = rootEl.querySelectorAll("h3, span, a, use");
     for (const el of elements) {
@@ -253,11 +271,48 @@
           if (target) t = cleanText(target.textContent);
         }
       }
-      if (t.toLowerCase() === "sponsored" || t === "ได้รับการสนับสนุน") {
+      if (isSponsoredLabelText(t)) {
         return true;
       }
     }
     return false;
+  }
+
+  // กวาดแอดแบบ Direct (ทะลุ cleanPostsCache สำหรับแอดที่โหลดลิงก์/SVG ทีหลัง)
+  function blockDirectSponsored() {
+    const isSearchPage = location.pathname.startsWith("/search");
+    if (
+      (isSearchPage && !config.removeSearchAds && !config.cleanMode) ||
+      (!isSearchPage && !config.removeSponsored && !config.cleanMode)
+    ) {
+      return;
+    }
+
+    // 1. ดักจากลิงก์ /ads/about โดยตรง
+    document.querySelectorAll('a[href*="/ads/about"]').forEach((node) => {
+      if (node.closest("[data-abff-blocked]")) return;
+      const card = findCardContainer(node);
+      if (card && !card.dataset.abffBlocked) {
+        applyBlock(card, "Sponsored (Direct)", "sponsored", 1);
+      }
+    });
+
+    // 2. ดักจาก SVG <use> ที่ซ่อนคำว่า Sponsored ใน aria-labelledby
+    document.querySelectorAll("span[aria-labelledby] svg use").forEach((useEl) => {
+      if (useEl.closest("[data-abff-blocked]")) return;
+      const wrapper = useEl.closest("span[aria-labelledby]");
+      const ids = (wrapper?.getAttribute("aria-labelledby") || "").split(/\s+/);
+      for (const id of ids) {
+        const target = id ? document.getElementById(id) : null;
+        if (target && isSponsoredLabelText(target.textContent)) {
+          const card = findCardContainer(wrapper);
+          if (card && !card.dataset.abffBlocked) {
+            applyBlock(card, "Sponsored (SVG)", "sponsored", 1);
+          }
+          break;
+        }
+      }
+    });
   }
 
   function blockRightRailAndMarketplaceAds() {
@@ -432,6 +487,7 @@
         });
     }
 
+    blockDirectSponsored();
     blockRightRailAndMarketplaceAds();
     blockDirectPPYMK();
 
