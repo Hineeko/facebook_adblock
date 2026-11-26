@@ -12,6 +12,7 @@
     removeStories: false,
     removeGroups: true,
     removePPYMK: true,
+	removeHoverCards: true,
     whitelist: "",
   };
 
@@ -85,6 +86,23 @@
       }`;
     (document.head || document.documentElement).appendChild(s);
   }
+  
+  function applyHoverCardCss() {
+  let s = document.getElementById("abff-hover");
+  if (!config.removeHoverCards && !config.cleanMode) {
+    if (s) s.remove();
+    return;
+  }
+  if (s) return;
+  s = document.createElement("style");
+  s.id = "abff-hover";
+  s.textContent = `
+    div[aria-label="Link preview"][aria-modal="true"],
+    div[aria-label="ตัวอย่างลิงก์"][aria-modal="true"] {
+      display: none !important;
+    }`;
+  (document.head || document.documentElement).appendChild(s);
+  }
 
   function parseWhitelist(str) {
     return (str || "")
@@ -124,6 +142,7 @@
       whitelistTerms = parseWhitelist(config.whitelist);
       isReady = true;
       applyFastCss();
+	  applyHoverCardCss();
       scheduleScan();
     });
 
@@ -138,6 +157,7 @@
         whitelistTerms = parseWhitelist(config.whitelist);
         cleanPostsCache = new WeakSet();
         applyFastCss();
+		applyHoverCardCss();
 
         if (oldHighlight !== config.highlightMode) {
           document.querySelectorAll("[data-abff-blocked]").forEach((el) => {
